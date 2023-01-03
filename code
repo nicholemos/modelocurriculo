@@ -72,14 +72,17 @@
     <div id="header">
       <h2>Curriculum Vitae</h2>
     </div>
-    <div id="photo">
-      <img src="https://placehold.it/200x200" class="img-fluid" alt="Foto de Perfil">
-    </div>
-    <div id="info">
-      <p>Nome Completo</p>
-      <p>Endereço</p>
-      <p>Telefone</p>
-    </div>
+    <div style="display: flex; flex-direction: row; justify-content: space-between">
+  <div id="photo">
+    <img src="https://placehold.it/200x200" class="img-fluid" alt="Foto de Perfil">
+  </div>
+  <div id="info">
+    <p>Nome Completo: <strong>Escreva aqui seu nome</strong></p>
+    <p>Endereço</p>
+    <p>Telefone</p>
+  </div>
+</div>
+
     <div id="experience">
       <h3>Experiências Profissionais</h3>
       <ul>
