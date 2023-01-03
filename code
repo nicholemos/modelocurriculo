@@ -101,9 +101,10 @@
       </ul>
     </div>
     <div id="footer">
-      <p>E-mail: seu@email.com</p>
-      <p>Website: www.seusite.com</p>
-    </div>
+  <p>E-mail: <a href="mailto:seu@email.com">seu@email.com</a></p>
+  <p>Website: <a href="http://www.seusite.com">www.seusite.com</a></p>
+</div>
+
   </div>
 </body>
 </html>
