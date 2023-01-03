@@ -92,6 +92,14 @@
         <li>Empresa 03 - Cargo 03</li>
       </ul>
     </div>
+    <div id="education">
+  <h3>Educação</h3>
+  <ul>
+    <li>Universidade 01 - Curso 01</li>
+    <li>Universidade 02 - Curso 02</li>
+    <li>Universidade 03 - Curso 03</li>
+  </ul>
+</div>
     <div id="courses">
       <h3>Cursos</h3>
       <ul>
@@ -100,6 +108,19 @@
         <li>Curso 03</li>
       </ul>
     </div>
+    <div id="languages">
+  <h3>Idiomas</h3>
+  <ul>
+    <li>Inglês - Fluente</li>
+    <li>Espanhol - Intermediário</li>
+    <li>Alemão - Básico</li>
+  </ul>
+</div>
+<div id="summary">
+  <h3>Sumário Executivo</h3>
+  <p>Escreva aqui um resumo das suas habilidades e experiências profissionais</p>
+</div>
+
     <div id="footer">
   <p>E-mail: <a href="mailto:seu@email.com">seu@email.com</a></p>
   <p>Website: <a href="http://www.seusite.com">www.seusite.com</a></p>
