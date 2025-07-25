@@ -1,131 +1,864 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <title>Curriculum Vitae</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-  <style>
-    
-    body {
-      background-color: #f5f5f5;
-    }
-    #photo {
-      border-radius: 50%;
-    }
-    #cv {
-      margin: 0 auto;
-      max-width: 800px;
-      background-color: #FFF;
-      padding: 30px;
-      box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
-      border-radius: 10px;
-    }
-    #header {
-      background-color: #2196F3;
-      padding: 15px;
-      margin-bottom: 20px;
-      text-align: center;
-      border-radius: 10px 10px 0 0;
-    }
-    #header h2 {
-      margin: 0;
-      font-weight: bold;
-      color: #FFF;
-    }
-    #info {
-      background-color: #e0e0e0;
-      padding: 15px;
-      margin-bottom: 20px;
-      text-align: center;
-      border-radius: 0 0 10px 10px;
-    }
-    #info p {
-      margin: 0;
-    }
-    #experience {
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-    #experience h3 {
-      margin: 0;
-      font-weight: bold;
-    }
-    #courses {
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-    #courses h3 {
-      margin: 0;
-      font-weight: bold;
-    }
-    #footer {
-      padding: 15px;
-      text-align: center;
-      background-color: #e0e0e0;
-    }
-    #footer p {
-      margin: 0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criador de Currículo Interativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html-to-docx@1.8.0/dist/html-to-docx.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .form-section {
+            display: none;
+        }
+        .form-section.active {
+            display: block;
+        }
+        #resume-preview-modern, #resume-preview-executive {
+            --primary-color: #B91C1C; /* Cor padrão, será sobrescrita */
+        }
+        .font-lora {
+            font-family: 'Lora', serif;
+        }
+        /* Destaque para o seletor de modelo */
+        #template-selector {
+            border-width: 2px;
+            border-color: #3B82F6; /* blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            transition: all 0.2s ease-in-out;
+            font-weight: 500;
+        }
+        /* Estilos para Dicas de Ajuda */
+        .help-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 9999px;
+            background-color: #E0E7FF; /* indigo-200 */
+            color: #4338CA; /* indigo-700 */
+            font-weight: bold;
+            font-size: 0.875rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            position: relative;
+        }
+        .tooltip {
+            visibility: hidden;
+            width: 240px;
+            background-color: #1F2937; /* gray-800 */
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 10;
+            bottom: 140%;
+            left: 50%;
+            margin-left: -120px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.875rem;
+            font-weight: normal;
+            line-height: 1.5;
+        }
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1F2937 transparent transparent transparent;
+        }
+        .help-icon:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Estilos para a impressão */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .printable-area, .printable-area * {
+                visibility: visible;
+            }
+            .printable-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: auto;
+                overflow: visible;
+                transform: scale(1);
+            }
+            .no-print {
+                display: none;
+            }
+        }
+        /* Spinner para loading da IA */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body>
-  <div id="cv">
-    <div id="header">
-      <h2>Curriculum Vitae</h2>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 lg:p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-blue-600">Criador de Currículo</h1>
+            <p class="text-gray-600 mt-2">Escolha um modelo e preencha os campos para gerar seu currículo.</p>
+        </div>
+
+        <div class="max-w-4xl mx-auto">
+            <!-- Seção do Formulário -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <form id="resume-form">
+                    <!-- Seleção de Modelo -->
+                    <fieldset class="mb-6">
+                        <legend class="text-2xl font-semibold mb-4 border-b pb-2 text-blue-500">Modelo de Currículo</legend>
+                        <select id="template-selector" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="classic">Modelo 1 - Clássico (Para IAs e ATS)</option>
+                            <option value="modern">Modelo 2 - Moderno (Para Recrutadores)</option>
+                            <option value="creative">Modelo 3 - Criativo (Para Portfólio)</option>
+                            <option value="executive">Modelo 4 - Executivo (Para Entrevistas)</option>
+                        </select>
+                    </fieldset>
+
+                    <!-- Personalização de Cores -->
+                    <fieldset class="mb-6 form-section modern creative executive">
+                        <legend class="text-2xl font-semibold mb-4 border-b pb-2 text-blue-500">Personalização</legend>
+                        <label for="color-picker" class="block text-sm font-medium text-gray-700">Escolha a Cor de Destaque</label>
+                        <input type="color" id="color-picker" class="mt-1 w-full h-10 rounded-md">
+                    </fieldset>
+
+                    <!-- Informações Pessoais -->
+                    <fieldset class="mb-6">
+                        <legend class="text-2xl font-semibold mb-4 border-b pb-2 text-blue-500">Informações Pessoais</legend>
+                        <div id="photo-upload-wrapper" class="mb-4" style="display: none;">
+                            <label for="photo-upload" class="block text-sm font-medium text-gray-700">Sua Foto (Recomendado: 300x300)</label>
+                            <input type="file" id="photo-upload" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Nome Completo">
+                            <input type="text" id="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Seu Título/Cargo">
+                            <input type="tel" id="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Telefone">
+                            <input type="email" id="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Email">
+                             <div class="form-section modern creative executive">
+                                <input type="text" id="linkedin" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="LinkedIn / Site / Endereço">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Objetivos / Resumo / Perfil -->
+                    <fieldset class="mb-6 form-section classic modern creative executive">
+                        <legend class="text-2xl font-semibold mb-4 border-b pb-2 text-blue-500 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span>
+                                    <span class="form-section classic active">Objetivos</span>
+                                    <span class="form-section modern">Resumo</span>
+                                    <span class="form-section creative">Perfil</span>
+                                    <span class="form-section executive">Resumo Profissional</span>
+                                </span>
+                                 <div class="help-icon">?
+                                    <span class="tooltip">Seja claro e conciso. Para "Objetivo", foque no que você busca. Para "Resumo" ou "Perfil", destaque suas principais qualificações e anos de experiência.</span>
+                                </div>
+                            </div>
+                            <button type="button" class="ai-review-btn text-sm bg-indigo-100 text-indigo-700 font-semibold py-1 px-3 rounded-full hover:bg-indigo-200" data-target="objective">Revisar com IA ✨</button>
+                        </legend>
+                        <textarea id="objective" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                    </fieldset>
+                    
+                    <!-- Formação -->
+                    <fieldset class="mb-6">
+                        <legend class="text-2xl font-semibold mb-4 border-b pb-2 text-blue-500">Formação Acadêmica</legend>
+                        <div id="education-fields" class="space-y-4"></div>
+                        <button type="button" id="add-education" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">Adicionar Formação</button>
+                    </fieldset>
+                    
+                    <!-- Cursos (Apenas Moderno) -->
+                    <fieldset class="mb-6 form-section modern">
+                        <legend class="text-2xl font-semibold mb-4 border-b pb-2 text-blue-500">Cursos</legend>
+                        <div id="courses-fields" class="space-y-2"></div>
+                        <button type="button" id="add-course" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">Adicionar Curso</button>
+                    </fieldset>
+                    
+                    <!-- Habilidades -->
+                    <fieldset class="mb-6 form-section modern creative executive">
+                        <legend class="text-2xl font-semibold mb-4 border-b pb-2 text-blue-500 flex items-center">Habilidades
+                            <div class="help-icon">?
+                                <span class="tooltip">Liste habilidades técnicas (Ex: Photoshop, Pacote Office) e comportamentais (Ex: Comunicação, Liderança).</span>
+                            </div>
+                        </legend>
+                        <div id="skills-fields" class="space-y-2"></div>
+                        <button type="button" id="add-skill" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">Adicionar Habilidade</button>
+                    </fieldset>
+                    
+                    <!-- Conquistas (Apenas Executivo) -->
+                    <fieldset class="mb-6 form-section executive">
+                        <legend class="text-2xl font-semibold mb-4 border-b pb-2 text-blue-500 flex items-center">Conquistas
+                            <div class="help-icon">?
+                                <span class="tooltip">Inclua prêmios, reconhecimentos, publicações ou projetos de grande impacto que você liderou.</span>
+                            </div>
+                        </legend>
+                        <div id="achievements-fields" class="space-y-2"></div>
+                        <button type="button" id="add-achievement" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">Adicionar Conquista</button>
+                    </fieldset>
+
+                    <!-- Experiências -->
+                    <fieldset class="mb-6">
+                        <legend class="text-2xl font-semibold mb-4 border-b pb-2 text-blue-500">Experiência Profissional</legend>
+                        <div id="experience-fields" class="space-y-4"></div>
+                        <button type="button" id="add-experience" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">Adicionar Experiência</button>
+                    </fieldset>
+
+                    <!-- Referências -->
+                    <fieldset>
+                        <legend class="text-2xl font-semibold mb-4 border-b pb-2 text-blue-500">Referências</legend>
+                        <div id="references-fields" class="space-y-4"></div>
+                        <button type="button" id="add-reference" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">Adicionar Referência</button>
+                    </fieldset>
+                </form>
+                <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                    <button id="save-progress-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 text-lg">Salvar Progresso</button>
+                    <button id="clear-progress-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 text-lg">Limpar Dados</button>
+                </div>
+                 <button id="open-modal-btn" class="mt-4 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-md transition duration-300 text-lg">
+                    Visualizar Currículo
+                </button>
+            </div>
+        </div>
     </div>
-    <div style="display: flex; flex-direction: row; justify-content: space-between">
-<div id="photo" style="width: 200px; height: 200px">
-  <img src="https://w7.pngwing.com/pngs/198/471/png-transparent-bald-man-portrait-man-in-suit-man-face-male-person-bald-adult-human-thumbnail.png" style="width: 100%; height: 100%; object-fit: cover" alt="Foto de Perfil">
-</div>
 
-  <div id="info">
-    <p>Nome Completo: <strong>Escreva aqui seu nome</strong></p>
-    <p>Endereço</p>
-    <p>Telefone</p>
-  </div>
-</div>
+    <!-- Modal de Pré-visualização do Currículo -->
+    <div id="resume-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center p-4 z-50">
+        <div id="modal-content" class="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-full overflow-y-auto relative">
+             <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl no-print">&times;</button>
+            
+            <div class="printable-area">
+                <!-- Preview Modelo Clássico -->
+                <div id="resume-preview-classic" class="p-8"></div>
 
-    <div id="experience">
-      <h3>Experiências Profissionais</h3>
-      <ul>
-        <li>Empresa 01 - Cargo 01</li>
-        <li>Empresa 02 - Cargo 02</li>
-        <li>Empresa 03 - Cargo 03</li>
-      </ul>
+                <!-- Preview Modelo Moderno -->
+                <div id="resume-preview-modern" style="display: none;" class="flex">
+                    <div class="w-1/3 bg-gray-100 p-6">
+                        <img id="modern-photo-preview" class="w-40 h-40 rounded-full object-cover mx-auto mb-6 border-4 border-gray-300" src="https://placehold.co/300x300/EFEFEF/AAAAAA?text=Sua+Foto" alt="Foto do Perfil">
+                        <div id="modern-resume-contacts"></div>
+                        <div id="modern-resume-skills" class="mt-6"></div>
+                        <div id="modern-resume-courses" class="mt-6"></div>
+                    </div>
+                    <div class="w-2/3 p-8">
+                        <h2 id="modern-resume-name" class="text-5xl font-extrabold"></h2>
+                        <p id="modern-resume-title" class="text-xl text-gray-600 mt-1 mb-6"></p>
+                        <div id="modern-resume-objective" class="mb-6"></div>
+                        <div id="modern-resume-experience" class="mb-6"></div>
+                        <div id="modern-resume-education" class="mb-6"></div>
+                        <div id="modern-resume-references"></div>
+                    </div>
+                </div>
+                
+                <!-- Preview Modelo Criativo -->
+                <div id="resume-preview-creative" style="display: none;" class="flex">
+                    <div id="creative-sidebar" class="w-1/3 p-6 flex flex-col items-center bg-green-50">
+                        <div id="creative-photo-border" class="w-40 h-40 p-2 transform -rotate-45 mb-8 bg-green-500">
+                            <img id="creative-photo-preview" class="w-full h-full object-cover transform rotate-45" src="https://placehold.co/300x300/EFEFEF/AAAAAA?text=Sua+Foto" alt="Foto do Perfil">
+                        </div>
+                        <h2 id="creative-resume-name" class="text-3xl font-bold text-center"></h2>
+                        <p id="creative-resume-title" class="text-lg text-gray-700 text-center mb-6"></p>
+                        <div class="w-full">
+                            <h3 id="creative-profile-title" class="text-lg font-bold mb-2 text-green-800">PERFIL</h3>
+                            <p id="creative-resume-objective" class="text-sm text-gray-600 mb-6"></p>
+                            <h3 id="creative-contact-title" class="text-lg font-bold mb-2 text-green-800">CONTATO</h3>
+                            <p id="creative-resume-phone" class="text-sm text-gray-600"></p>
+                            <p id="creative-resume-email" class="text-sm text-gray-600"></p>
+                            <p id="creative-resume-linkedin" class="text-sm text-gray-600 truncate"></p>
+                        </div>
+                    </div>
+                    <div class="w-2/3 p-8">
+                        <div id="creative-resume-education" class="mb-6"></div>
+                        <div id="creative-resume-experience" class="mb-6"></div>
+                        <div id="creative-resume-skills" class="mb-6"></div>
+                        <div id="creative-resume-achievements" class="mb-6"></div>
+                        <div id="creative-resume-references" class="mt-6"></div>
+                    </div>
+                </div>
+
+                <!-- Preview Modelo Executivo -->
+                <div id="resume-preview-executive" style="display: none;" class="flex">
+                    <div class="w-1/3 bg-gray-800 text-white p-6">
+                        <img id="executive-photo-preview" class="w-40 h-40 rounded-full object-cover mx-auto mb-6 border-4 border-gray-500" src="https://placehold.co/300x300/EFEFEF/AAAAAA?text=Sua+Foto" alt="Foto do Perfil">
+                        <div id="executive-resume-objective" class="text-sm text-gray-300 border-t border-b border-gray-600 py-4"></div>
+                        <div id="executive-resume-skills" class="mt-6"></div>
+                        <div id="executive-resume-achievements" class="mt-6"></div>
+                    </div>
+                    <div class="w-2/3 p-8 bg-white">
+                        <h2 id="executive-resume-name" class="font-lora text-5xl font-bold" style="color: var(--primary-color);"></h2>
+                        <p id="executive-resume-title" class="text-xl text-gray-700 mt-1 mb-4"></p>
+                        <div class="border-t-2 pt-4 space-y-2" style="border-color: var(--primary-color);">
+                            <div class="flex items-center text-sm">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.518.759a11.03 11.03 0 004.28 4.28l.759-1.518a1 1 0 011.06-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
+                                <span id="executive-resume-phone"></span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"></path></svg>
+                                <span id="executive-resume-linkedin"></span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 2.006l7.997 3.878A2 2 0 0118 7.616V16a2 2 0 01-2 2H4a2 2 0 01-2-2V7.616a2 2 0 01.003-1.732zM10 4.218L4 7.118V16h12V7.118L10 4.218zM4 6h12v-1L10 2.5 4 5v1z"></path></svg>
+                                <span id="executive-resume-email"></span>
+                            </div>
+                        </div>
+                        <div id="executive-resume-experience" class="mt-8"></div>
+                        <div id="executive-resume-education" class="mt-8"></div>
+                        <div id="executive-resume-references" class="mt-8"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-8 no-print flex flex-col sm:flex-row gap-4">
+                <button id="export-docx-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-md transition duration-300 text-lg">Exportar para .docx</button>
+                <button onclick="window.print()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-md transition duration-300 text-lg">
+                    Salvar em PDF / Imprimir
+                </button>
+            </div>
+        </div>
     </div>
-    <div id="education">
-  <h3>Educação</h3>
-  <ul>
-    <li>Universidade 01 - Curso 01</li>
-    <li>Universidade 02 - Curso 02</li>
-    <li>Universidade 03 - Curso 03</li>
-  </ul>
-</div>
-    <div id="courses">
-      <h3>Cursos</h3>
-      <ul>
-        <li>Curso 01</li>
-        <li>Curso 02</li>
-        <li>Curso 03</li>
-      </ul>
+
+    <!-- Modal de Revisão da IA -->
+    <div id="ai-review-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full p-6 relative">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Sugestão da IA</h3>
+            <div id="ai-modal-content">
+                <div class="flex justify-center items-center h-40">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            <div id="ai-modal-actions" class="mt-6 flex justify-end gap-4" style="display: none;">
+                <button id="ai-cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancelar</button>
+                <button id="ai-accept-btn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Aceitar Sugestão</button>
+            </div>
+        </div>
     </div>
-    <div id="languages">
-  <h3>Idiomas</h3>
-  <ul>
-    <li>Inglês - Fluente</li>
-    <li>Espanhol - Intermediário</li>
-    <li>Alemão - Básico</li>
-  </ul>
-</div>
-<div id="summary">
-  <h3>Sumário Executivo</h3>
-  <p>Escreva aqui um resumo das suas habilidades e experiências profissionais</p>
-</div>
 
-    <div id="footer">
-  <p>E-mail: <a href="mailto:seu@email.com">seu@email.com</a></p>
-  <p>Website: <a href="http://www.seusite.com">www.seusite.com</a></p>
-</div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Seletores de Elementos ---
+        const form = document.getElementById('resume-form');
+        const templateSelector = document.getElementById('template-selector');
+        const colorPicker = document.getElementById('color-picker');
+        const photoUpload = document.getElementById('photo-upload');
+        const openModalBtn = document.getElementById('open-modal-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const saveProgressBtn = document.getElementById('save-progress-btn');
+        const clearProgressBtn = document.getElementById('clear-progress-btn');
+        const exportDocxBtn = document.getElementById('export-docx-btn');
+        
+        // --- Modal de Revisão da IA ---
+        const aiReviewModal = document.getElementById('ai-review-modal');
+        const aiModalContent = document.getElementById('ai-modal-content');
+        const aiModalActions = document.getElementById('ai-modal-actions');
+        const aiAcceptBtn = document.getElementById('ai-accept-btn');
+        const aiCancelBtn = document.getElementById('ai-cancel-btn');
+        let activeTextarea = null;
 
-  </div>
+        const initialData = {
+            classic: { color: '#3B82F6' },
+            modern: { 
+                name: "Bianca C. Almeida", title: "Gestora de Mídias Sociais", phone: "(11) 98765-4321", email: "bianca.almeida@email.com", linkedin: "linkedin.com/in/bianca-almeida",
+                objective: "Gestora de mídia social com mais de 4 anos de experiência em criar e executar estratégias de conteúdo que aumentam o engajamento e a visibilidade da marca. Especialista em análise de métricas e otimização de campanhas.",
+                education: [ { period: '2016 - 2019', institution: 'Faculdade Cásper Líbero', course: 'Graduação | Publicidade e Propaganda' } ],
+                experience: [ { period: 'Jun 2022 - Atual', company: 'Agência Sharesy', role: 'Gestora de Mídia Social', description: 'Criei uma estratégia de marketing de conteúdo que resultou em um aumento de 45% no engajamento orgânico.' } ],
+                courses: [ { text: "Curso de Gestão de Mídias Sociais, 2022" }, { text: "Marketing de Influência, 2021" } ],
+                skills: [ { text: "Planejamento Estratégico" }, { text: "Análise de Métricas" } ],
+                references: [],
+                color: '#4A5568'
+            },
+            creative: { color: '#10B981' },
+            executive: {
+                name: "ANNA COOPER", title: "VP at ABC Co.", phone: "7899456123", email: "Add Email Here", linkedin: "#3434, Avenue Rose Street",
+                objective: "Dedicated senior technical manager with 12+ years of experience. Worked in 2 or the top Technical organization.",
+                education: [ { period: '2009 - 2010', institution: 'Add Details Here', course: 'MBA, Master\'s in Business Administration' } ],
+                experience: [
+                    { period: 'March 2018 - Present', company: 'ABC Co and Works', role: 'Vice President', description: 'Responsible to overlook sales of major global regions - USA, India, China and Europe. Responsible for smooth functioning of office works.' },
+                ],
+                skills: [ { text: "Microsoft office suite" }, { text: "Financial forecasting" }],
+                achievements: [ { text: "1st in county level technical competition" }],
+                references: [ { name: "John Doe", title: "CEO, Example Inc.", phone: "123-456-7890", email: "john.doe@example.com" } ],
+                color: '#B91C1C'
+            }
+        };
+        initialData.classic = { ...initialData.executive, name: "Juliana Silva", color: '#3B82F6' };
+        initialData.creative = { ...initialData.executive, name: "NOME AQUI", color: '#10B981' };
+
+
+        // --- Funções Principais ---
+        function switchTemplate(template) {
+            const formSections = document.querySelectorAll('.form-section');
+            document.getElementById('photo-upload-wrapper').style.display = ['modern', 'creative', 'executive'].includes(template) ? 'block' : 'none';
+            formSections.forEach(el => {
+                el.classList.remove('active');
+                if (el.classList.contains(template)) {
+                    el.classList.add('active');
+                }
+            });
+            if (!document.querySelector('.form-section.active')) {
+                 document.querySelector('.form-section.classic').classList.add('active');
+            }
+        }
+        
+        function loadFormData(data) {
+            if (!data) return;
+            document.querySelectorAll('#education-fields, #experience-fields, #skills-fields, #achievements-fields, #references-fields, #courses-fields').forEach(el => el.innerHTML = '');
+            form.querySelector('#name').value = data.name || '';
+            form.querySelector('#title').value = data.title || '';
+            form.querySelector('#phone').value = data.phone || '';
+            form.querySelector('#email').value = data.email || '';
+            form.querySelector('#linkedin').value = data.linkedin || '';
+            form.querySelector('#objective').value = data.objective || '';
+            colorPicker.value = data.color || '#3B82F6';
+            (data.education || []).forEach(item => addEducationField(item.period, item.institution, item.course));
+            (data.experience || []).forEach(item => addExperienceField(item.period, item.company, item.role, item.description));
+            (data.skills || []).forEach(item => addSkillField(item.text, item.level));
+            (data.achievements || []).forEach(item => addAchievementField(item.text));
+            (data.references || []).forEach(item => addReferenceField(item.name, item.title, item.phone, item.email));
+            (data.courses || []).forEach(item => addCourseField(item.text));
+        }
+        
+        function createRemoveButton() {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'remove-btn absolute top-2 right-2 text-red-500 hover:text-red-700 no-print';
+            button.innerHTML = '&times;';
+            button.addEventListener('click', () => button.parentElement.remove());
+            return button;
+        }
+
+        function addEducationField(period = '', institution = '', course = '') {
+            const educationFields = document.getElementById('education-fields');
+            const newField = document.createElement('div');
+            newField.className = 'p-4 border rounded-md relative';
+            newField.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">Período</label><input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" data-field="period" value="${period}"></div><div><label class="block text-sm font-medium text-gray-700">Instituição</label><input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" data-field="institution" value="${institution}"></div></div><div class="mt-4"><label class="block text-sm font-medium text-gray-700">Curso/Descrição</label><textarea rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" data-field="course">${course}</textarea></div>`;
+            newField.prepend(createRemoveButton());
+            educationFields.appendChild(newField);
+        }
+
+        function addExperienceField(period = '', company = '', role = '', description = '') {
+            const experienceFields = document.getElementById('experience-fields');
+            const newField = document.createElement('div');
+            const uniqueId = `exp-desc-${Date.now()}`;
+            newField.className = 'p-4 border rounded-md relative';
+            newField.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" class="block w-full rounded-md border-gray-300 shadow-sm" data-field="period" value="${period}" placeholder="Período (Ex: 2019 - 2023)">
+                    <input type="text" class="block w-full rounded-md border-gray-300 shadow-sm" data-field="company" value="${company}" placeholder="Empresa">
+                </div>
+                <div class="mt-4">
+                    <input type="text" class="block w-full rounded-md border-gray-300 shadow-sm" data-field="role" value="${role}" placeholder="Cargo">
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 flex items-center justify-between">
+                        <span class="flex items-center">Descrição
+                            <div class="help-icon">?<span class="tooltip">Descreva suas responsabilidades e conquistas usando verbos de ação. Ex: "Gerenciei uma equipe de 5 pessoas...", "Aumentei as vendas em 20%...".</span></div>
+                        </span>
+                        <button type="button" class="ai-review-btn text-xs bg-indigo-100 text-indigo-700 font-semibold py-1 px-2 rounded-full hover:bg-indigo-200" data-target="${uniqueId}">Revisar ✨</button>
+                    </label>
+                    <textarea id="${uniqueId}" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" data-field="description">${description}</textarea>
+                </div>
+            `;
+            newField.prepend(createRemoveButton());
+            experienceFields.appendChild(newField);
+        }
+
+        function addSkillField(text = '', level = 50) {
+            const skillsFields = document.getElementById('skills-fields');
+            const newField = document.createElement('div');
+            newField.className = 'flex items-center space-x-2 relative';
+            let levelInput = `<div class="form-section creative w-1/3"><label class="text-xs">Nível (0-100)</label><input type="number" min="0" max="100" class="block w-full rounded-md border-gray-300 shadow-sm" data-field="level" value="${level}"></div>`;
+            newField.innerHTML = `<div class="flex-grow"><label class="text-xs">Habilidade</label><input type="text" class="block w-full rounded-md border-gray-300 shadow-sm" data-field="text" value="${text}"></div> ${levelInput}`;
+            newField.append(createRemoveButton());
+            skillsFields.appendChild(newField);
+            const template = templateSelector.value;
+            const levelInputEl = newField.querySelector('.form-section.creative');
+            if(levelInputEl) levelInputEl.style.display = template === 'creative' ? 'block' : 'none';
+        }
+
+        function addAchievementField(text = '') {
+            const achievementsFields = document.getElementById('achievements-fields');
+            const newField = document.createElement('div');
+            newField.className = 'relative';
+            newField.innerHTML = `<input type="text" class="block w-full rounded-md border-gray-300 shadow-sm pr-8" data-field="text" value="${text}">`;
+            newField.append(createRemoveButton());
+            achievementsFields.appendChild(newField);
+        }
+
+        function addReferenceField(name = '', title = '', phone = '', email = '') {
+            const referencesFields = document.getElementById('references-fields');
+            const newField = document.createElement('div');
+            newField.className = 'p-4 border rounded-md relative';
+            newField.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" class="block w-full rounded-md border-gray-300 shadow-sm" data-field="name" value="${name}" placeholder="Nome do Contato">
+                    <input type="text" class="block w-full rounded-md border-gray-300 shadow-sm" data-field="title" value="${title}" placeholder="Cargo, Empresa">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <input type="tel" class="block w-full rounded-md border-gray-300 shadow-sm" data-field="phone" value="${phone}" placeholder="Telefone">
+                    <input type="email" class="block w-full rounded-md border-gray-300 shadow-sm" data-field="email" value="${email}" placeholder="Email">
+                </div>
+            `;
+            newField.prepend(createRemoveButton());
+            referencesFields.appendChild(newField);
+        }
+        
+        function addCourseField(text = '') {
+            const coursesFields = document.getElementById('courses-fields');
+            const newField = document.createElement('div');
+            newField.className = 'relative';
+            newField.innerHTML = `<input type="text" class="block w-full rounded-md border-gray-300 shadow-sm pr-8" data-field="text" value="${text}">`;
+            newField.append(createRemoveButton());
+            coursesFields.appendChild(newField);
+        }
+        
+        function escapeHTML(str) {
+            if (!str) return '';
+            const p = document.createElement('p');
+            p.textContent = str;
+            return p.innerHTML.replace(/\n/g, '<br>');
+        }
+        
+        function updateAllPreviews() {
+            const color = colorPicker.value;
+            const name = escapeHTML(form.querySelector('#name').value);
+            const title = escapeHTML(form.querySelector('#title').value);
+            const phone = escapeHTML(form.querySelector('#phone').value);
+            const email = escapeHTML(form.querySelector('#email').value);
+            const linkedin = escapeHTML(form.querySelector('#linkedin').value);
+            const objective = escapeHTML(form.querySelector('#objective').value);
+
+            // Update static fields for all templates
+            document.querySelectorAll('[id$="-resume-name"]').forEach(el => el.innerHTML = name);
+            document.querySelectorAll('[id$="-resume-title"]').forEach(el => el.innerHTML = title);
+            document.querySelectorAll('[id$="-resume-phone"]').forEach(el => el.innerHTML = phone);
+            document.querySelectorAll('[id$="-resume-email"]').forEach(el => el.innerHTML = email);
+            document.querySelectorAll('[id$="-resume-linkedin"]').forEach(el => el.innerHTML = linkedin);
+            document.querySelectorAll('[id$="-resume-objective"]').forEach(el => el.innerHTML = objective);
+
+            // Apply colors
+            document.getElementById('resume-preview-executive').style.setProperty('--primary-color', color);
+            document.getElementById('resume-preview-modern').style.setProperty('--primary-color', color);
+
+            // Update dynamic sections
+            updateSectionPreview('education');
+            updateSectionPreview('experience');
+            updateSectionPreview('skills');
+            updateSectionPreview('achievements');
+            updateSectionPreview('references');
+            updateSectionPreview('courses');
+        }
+
+        function updateSectionPreview(sectionName) {
+            const fieldsContainer = document.getElementById(`${sectionName}-fields`);
+            if (!fieldsContainer) return;
+        
+            const items = fieldsContainer.querySelectorAll('.p-4, .flex, .relative');
+            let classicHTML = '', executiveHTML = '', modernHTML = '', creativeHTML = '';
+        
+            const titles = {
+                education: "Formação", experience: "Experiências", references: "Referências",
+                skills: "Habilidades", achievements: "Conquistas", courses: "Cursos"
+            };
+        
+            if (items.length > 0 && titles[sectionName]) {
+                classicHTML = `<h3 class="text-lg font-bold uppercase tracking-wider text-blue-600 mb-2 mt-6">${titles[sectionName]}</h3>`;
+                executiveHTML = `<h3 class="font-lora text-2xl font-bold border-b-2 pb-1 mb-4" style="color: var(--primary-color); border-color: var(--primary-color);">${titles[sectionName].toUpperCase()}</h3>`;
+                modernHTML = `<h3 class="text-xl font-bold mb-2" style="color: var(--primary-color);">${titles[sectionName]}</h3>`;
+                creativeHTML = `<h3 class="text-xl font-bold text-white p-2 pl-4 -ml-12 bg-green-800" style="clip-path: polygon(0 0, 100% 0%, 95% 100%, 0% 100%);">${titles[sectionName].toUpperCase()}</h3>`;
+            }
+        
+            items.forEach(item => {
+                switch (sectionName) {
+                    case 'education':
+                        const eduPeriod = escapeHTML(item.querySelector('[data-field="period"]')?.value || '');
+                        const eduInstitution = escapeHTML(item.querySelector('[data-field="institution"]')?.value || '');
+                        const eduCourse = escapeHTML(item.querySelector('textarea[data-field="course"]')?.value || '');
+                        classicHTML += `<div><p class="font-semibold">${eduPeriod} | ${eduInstitution}</p><p class="text-sm italic">${eduCourse}</p></div>`;
+                        executiveHTML += `<div class="mb-4"><p class="font-bold">${eduPeriod}</p><p class="font-semibold">${eduInstitution}</p><div class="text-sm">${eduCourse}</div></div>`;
+                        modernHTML += `<div class="mb-4"><p class="font-semibold">${eduInstitution}</p><p class="text-sm">${eduCourse}</p><p class="text-xs text-gray-500">${eduPeriod}</p></div>`;
+                        creativeHTML += `<div><p class="font-bold">${eduInstitution}</p><p class="text-sm">${eduCourse}</p></div>`;
+                        break;
+                    case 'experience':
+                        const expPeriod = escapeHTML(item.querySelector('[data-field="period"]')?.value || '');
+                        const expCompany = escapeHTML(item.querySelector('[data-field="company"]')?.value || '');
+                        const expRole = escapeHTML(item.querySelector('[data-field="role"]')?.value || '');
+                        const expDescription = escapeHTML(item.querySelector('textarea[data-field="description"]')?.value || '');
+                        classicHTML += `<div class="mb-2"><p class="font-semibold">${expPeriod} | ${expCompany} - ${expRole}</p><p class="text-sm">${expDescription}</p></div>`;
+                        executiveHTML += `<div class="mb-4"><p class="font-bold">${expPeriod}</p><p class="font-semibold">${expCompany} - ${expRole}</p><div class="text-sm mt-1">${expDescription}</div></div>`;
+                        modernHTML += `<div class="mb-4"><p class="font-bold">${expRole}</p><p class="font-semibold">${expCompany}</p><p class="text-xs text-gray-500">${expPeriod}</p><div class="text-sm mt-1">${expDescription}</div></div>`;
+                        creativeHTML += `<div><p class="font-bold">${expCompany} | ${expRole}</p><p class="text-sm">${expDescription}</p></div>`;
+                        break;
+                    case 'skills':
+                        const skillText = escapeHTML(item.querySelector('[data-field="text"]')?.value || '');
+                        if (skillText) {
+                            classicHTML += `<span>${skillText}</span>, `;
+                            executiveHTML += `<li>${skillText}</li>`;
+                            modernHTML += `<li>${skillText}</li>`;
+                            creativeHTML += `<p class="text-sm">${skillText}</p>`;
+                        }
+                        break;
+                    case 'achievements':
+                         const achievementText = escapeHTML(item.querySelector('[data-field="text"]')?.value || '');
+                         if(achievementText) {
+                            classicHTML += `<p class="text-sm">${achievementText}</p>`;
+                            executiveHTML += `<li>${achievementText}</li>`;
+                         }
+                        break;
+                    case 'references':
+                        const refName = escapeHTML(item.querySelector('[data-field="name"]')?.value || '');
+                        const refTitle = escapeHTML(item.querySelector('[data-field="title"]')?.value || '');
+                        const refPhone = escapeHTML(item.querySelector('[data-field="phone"]')?.value || '');
+                        const refEmail = escapeHTML(item.querySelector('[data-field="email"]')?.value || '');
+                        if (refName) {
+                            const refHTML = `<div class="mb-2"><p class="font-semibold">${refName}</p><p class="text-sm">${refTitle}</p><p class="text-sm">${refPhone} | ${refEmail}</p></div>`;
+                            classicHTML += refHTML;
+                            executiveHTML += refHTML;
+                            modernHTML += refHTML;
+                            creativeHTML += refHTML;
+                        }
+                        break;
+                    case 'courses':
+                        const courseText = escapeHTML(item.querySelector('[data-field="text"]')?.value || '');
+                        if (courseText) {
+                            modernHTML += `<p class="text-sm">${courseText}</p>`;
+                        }
+                        break;
+                }
+            });
+        
+            if (['skills', 'achievements'].includes(sectionName) && items.length > 0) {
+                 executiveHTML = '<ul>' + executiveHTML.replace('</h3>', '</h3><ul class="space-y-1 text-sm list-disc list-inside">') + '</ul>';
+            }
+            if (['skills', 'courses'].includes(sectionName) && items.length > 0) {
+                 modernHTML = '<ul>' + modernHTML.replace('</h3>', '</h3><ul class="space-y-1 text-sm list-disc list-inside">') + '</ul>';
+            }
+        
+            const classicPreview = document.getElementById('resume-preview-classic');
+            if (classicPreview) {
+                 let fullClassicHTML = `<div class="text-center pb-4 border-b-2 border-gray-300"><h2 id="classic-resume-name" class="text-4xl font-bold uppercase tracking-wider">${name}</h2><p id="classic-resume-title" class="text-xl text-gray-600 mt-1">${title}</p></div><div class="text-center py-4 border-b-2 border-gray-300 flex justify-center items-center space-x-8 text-sm"><span id="classic-resume-phone">${phone}</span><span id="classic-resume-email">${email}</span></div><div class="mt-6"><h3 class="text-lg font-bold uppercase tracking-wider text-blue-600 mb-2">Objetivos</h3><p id="classic-resume-objective" class="text-sm text-gray-700 leading-relaxed">${objective}</p></div>`;
+                 
+                 ['education', 'experience', 'skills', 'achievements', 'references'].forEach(sec => {
+                     const secContainer = document.getElementById(`${sec}-fields`);
+                     if (secContainer && secContainer.innerHTML.trim() !== '') {
+                         fullClassicHTML += `<div id="classic-resume-${sec}" class="mt-6"></div>`;
+                     }
+                 });
+                 classicPreview.innerHTML = fullClassicHTML;
+            }
+        
+            document.getElementById(`executive-resume-${sectionName}`)?.insertAdjacentHTML('beforeend', executiveHTML);
+            document.getElementById(`modern-resume-${sectionName}`)?.insertAdjacentHTML('beforeend', modernHTML);
+            document.getElementById(`creative-resume-${sectionName}`)?.insertAdjacentHTML('beforeend', creativeHTML);
+        }
+
+        function saveDataToLocalStorage() {
+            const data = {
+                template: templateSelector.value,
+                color: colorPicker.value,
+                name: form.querySelector('#name').value,
+                title: form.querySelector('#title').value,
+                phone: form.querySelector('#phone').value,
+                email: form.querySelector('#email').value,
+                linkedin: form.querySelector('#linkedin').value,
+                objective: form.querySelector('#objective').value,
+                education: [], experience: [], skills: [], achievements: [], references: [], courses: []
+            };
+
+            document.getElementById('education-fields').querySelectorAll('.p-4').forEach(item => data.education.push({ period: item.querySelector('[data-field="period"]')?.value || '', institution: item.querySelector('[data-field="institution"]')?.value || '', course: item.querySelector('textarea[data-field="course"]')?.value || '' }));
+            document.getElementById('experience-fields').querySelectorAll('.p-4').forEach(item => data.experience.push({ period: item.querySelector('[data-field="period"]')?.value || '', company: item.querySelector('[data-field="company"]')?.value || '', role: item.querySelector('[data-field="role"]')?.value || '', description: item.querySelector('textarea[data-field="description"]')?.value || '' }));
+            document.getElementById('skills-fields').querySelectorAll('.flex').forEach(item => data.skills.push({ text: item.querySelector('[data-field="text"]')?.value || '', level: item.querySelector('[data-field="level"]') ? item.querySelector('[data-field="level"]').value : 0 }));
+            document.getElementById('achievements-fields').querySelectorAll('.relative').forEach(item => data.achievements.push({ text: item.querySelector('[data-field="text"]')?.value || '' }));
+            document.getElementById('references-fields').querySelectorAll('.p-4').forEach(item => data.references.push({ name: item.querySelector('[data-field="name"]')?.value || '', title: item.querySelector('[data-field="title"]')?.value || '', phone: item.querySelector('[data-field="phone"]')?.value || '', email: item.querySelector('[data-field="email"]')?.value || '' }));
+            document.getElementById('courses-fields').querySelectorAll('.relative').forEach(item => data.courses.push({ text: item.querySelector('[data-field="text"]')?.value || '' }));
+
+            localStorage.setItem('resumeData', JSON.stringify(data));
+            alert('Progresso salvo com sucesso!');
+        }
+
+        function clearDataFromLocalStorage() {
+            if (confirm('Tem certeza que deseja limpar todos os dados salvos? Esta ação não pode ser desfeita.')) {
+                localStorage.removeItem('resumeData');
+                location.reload();
+            }
+        }
+
+        function loadInitialData() {
+            const savedDataJSON = localStorage.getItem('resumeData');
+            if (savedDataJSON) {
+                const savedData = JSON.parse(savedDataJSON);
+                templateSelector.value = savedData.template;
+                switchTemplate(savedData.template);
+                loadFormData(savedData);
+            } else {
+                const template = templateSelector.value;
+                switchTemplate(template);
+                loadFormData(initialData[template]);
+            }
+        }
+
+        async function getAIReview(text) {
+            aiModalContent.innerHTML = `<div class="flex justify-center items-center h-40"><div class="spinner"></div></div>`;
+            aiModalActions.style.display = 'none';
+            aiAcceptBtn.style.display = 'inline-flex';
+            
+            const prompt = `Como um coach de carreira especialista, revise o seguinte texto de um currículo. Corrija a gramática, melhore o impacto usando verbos de ação e, se possível, sugira formas de quantificar os resultados. Retorne apenas o texto revisado, sem qualquer outra explicação ou introdução. O texto é: "${text}"`;
+            
+            try {
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts[0].text) {
+                    const revisedText = result.candidates[0].content.parts[0].text;
+                    aiModalContent.innerHTML = `
+                        <div>
+                            <p class="text-sm text-gray-600 mb-2">Texto Original:</p>
+                            <p class="p-2 bg-gray-100 rounded-md text-sm">${escapeHTML(text)}</p>
+                            <p class="text-sm text-gray-600 mt-4 mb-2">Sugestão Melhorada:</p>
+                            <p id="ai-suggestion" class="p-2 bg-green-100 border border-green-300 rounded-md text-sm">${escapeHTML(revisedText)}</p>
+                        </div>
+                    `;
+                } else {
+                    throw new Error("Nenhuma sugestão foi retornada pela IA.");
+                }
+
+            } catch (error) {
+                console.error("Erro ao chamar a IA:", error);
+                aiModalContent.innerHTML = `<p class="text-red-500">Ocorreu um erro ao buscar a sugestão. Tente novamente mais tarde.</p>`;
+                aiAcceptBtn.style.display = 'none';
+            } finally {
+                aiModalActions.style.display = 'flex';
+            }
+        }
+
+        async function exportToDocx() {
+            const activePreviewId = `resume-preview-${templateSelector.value}`;
+            const previewNode = document.getElementById(activePreviewId);
+            if (!previewNode) return;
+            if (typeof window.htmlToDocx === 'undefined') {
+                alert('A biblioteca de exportação ainda não foi carregada. Tente novamente em alguns segundos.');
+                return;
+            }
+            const fileBuffer = await window.htmlToDocx.asBlob(previewNode.outerHTML, {
+                orientation: 'portrait',
+                margins: {
+                    top: 720, // 1 inch
+                    right: 720,
+                    bottom: 720,
+                    left: 720,
+                }
+            });
+            saveAs(fileBuffer, 'curriculo.docx');
+        }
+
+        // --- Inicialização e Event Listeners ---
+        document.getElementById('add-education').addEventListener('click', () => addEducationField());
+        document.getElementById('add-experience').addEventListener('click', () => addExperienceField());
+        document.getElementById('add-skill').addEventListener('click', () => addSkillField());
+        document.getElementById('add-achievement').addEventListener('click', () => addAchievementField());
+        document.getElementById('add-reference').addEventListener('click', () => addReferenceField());
+        document.getElementById('add-course').addEventListener('click', () => addCourseField());
+        
+        templateSelector.addEventListener('change', (e) => {
+            const template = e.target.value;
+            switchTemplate(template);
+            loadFormData(initialData[template]);
+        });
+        
+        colorPicker.addEventListener('input', updateAllPreviews);
+        
+        openModalBtn.addEventListener('click', () => {
+            updateAllPreviews();
+            const template = templateSelector.value;
+            document.querySelectorAll('#resume-preview-classic, #resume-preview-modern, #resume-preview-creative, #resume-preview-executive').forEach(el => el.style.display = 'none');
+            const previewEl = document.getElementById(`resume-preview-${template}`);
+            previewEl.style.display = ['creative', 'executive', 'modern'].includes(template) ? 'flex' : 'block';
+            document.getElementById('resume-modal').classList.remove('hidden');
+        });
+        
+        closeModalBtn.addEventListener('click', () => document.getElementById('resume-modal').classList.add('hidden'));
+        saveProgressBtn.addEventListener('click', saveDataToLocalStorage);
+        clearProgressBtn.addEventListener('click', clearDataFromLocalStorage);
+        exportDocxBtn.addEventListener('click', exportToDocx);
+
+        photoUpload.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imageUrl = e.target.result;
+                    ['modern-photo-preview', 'creative-photo-preview', 'executive-photo-preview'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.src = imageUrl;
+                    });
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        document.body.addEventListener('click', function(event) {
+            if (event.target.classList.contains('ai-review-btn')) {
+                const targetId = event.target.dataset.target;
+                activeTextarea = document.getElementById(targetId);
+                if (activeTextarea && activeTextarea.value.trim()) {
+                    aiReviewModal.classList.remove('hidden');
+                    getAIReview(activeTextarea.value);
+                } else {
+                    alert("Por favor, escreva algo no campo antes de pedir a revisão.");
+                }
+            }
+        });
+
+        aiCancelBtn.addEventListener('click', () => {
+            aiReviewModal.classList.add('hidden');
+            activeTextarea = null;
+        });
+
+        aiAcceptBtn.addEventListener('click', () => {
+            if (activeTextarea) {
+                const suggestionEl = document.getElementById('ai-suggestion');
+                if(suggestionEl) {
+                    activeTextarea.value = suggestionEl.textContent;
+                }
+            }
+            aiReviewModal.classList.add('hidden');
+            activeTextarea = null;
+        });
+
+        loadInitialData();
+    });
+    </script>
 </body>
 </html>
